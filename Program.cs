@@ -20,9 +20,10 @@ namespace Gzip_Application
             {
                 case "Compress":
                     Compression compressionTask = new Compression(inputFile, outputFile);
-                    if (File.Exists(outputFile))
+
+                    if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
-                        Console.WriteLine($"File {outputFile} already exists");
+                        Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
                         Environment.Exit(0);
                         break;
                     }
@@ -34,9 +35,9 @@ namespace Gzip_Application
                     break;
                 case "Decompress":
                     Decompression decompressionTask = new Decompression(inputFile, outputFile);
-                    if (File.Exists(outputFile))
+                    if (File.Exists(outputFile) || !File.Exists(outputFile))
                     {
-                        Console.WriteLine($"File {outputFile} already exists");
+                        Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
                         Environment.Exit(0);
                         break;
                     }
