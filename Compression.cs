@@ -45,6 +45,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i < _iterations; i++)
                     {
+                        Helper.semaf.WaitOne();
                         BlockOperation bo = new BlockOperation();
                         byte[] bt = bo.FetchBlock(i, breader);
                         _blocksToCompress_array[i] = bt;
@@ -64,6 +65,7 @@ namespace Gzip_Application
             {
                 for (int i = 0; i < _blocksToCompress_array.Length; i++)
                 {
+                    Helper.semaf.WaitOne();
                     int j = i;
                     Thread compress = new Thread(() => Block_Compress_ToArray(j));
                     { }
@@ -91,6 +93,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i < _iterations; i++)
                     {
+                        Helper.semaf.WaitOne();
                         int j = i;
                         Thread write = new Thread(() => Block_Write_ToStream(toStream, _offsets_calc.Offsets[j], j));
                         { }

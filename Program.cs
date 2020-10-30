@@ -9,7 +9,8 @@ namespace Gzip_Application
         {
             if (args.Length != 3)
             {
-                Console.WriteLine("Expected Three Arguments -Command(Compress/Decompress)- -Inpur File Path- -Output File Path- ");
+                Console.WriteLine("Expected Three Arguments - Command(Compress or Decompress)  'Input Full File Path String'  'Output Full File Path String' ");
+                Console.ReadLine();
             }
             string executableAction = args[0];
             string inputFile = args[1];
@@ -22,9 +23,12 @@ namespace Gzip_Application
                     if (File.Exists(outputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists");
+                        Environment.Exit(0);
+                        break;
                     }
                     else
                     {
+                        Console.WriteLine("Started Compression");
                         compressionTask.CompressFile();
                     }
                     break;
@@ -33,9 +37,12 @@ namespace Gzip_Application
                     if (File.Exists(outputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists");
+                        Environment.Exit(0);
+                        break;
                     }
                     else
                     {
+                        Console.WriteLine("Started Decompression");
                         decompressionTask.DecompressFile();
                     }
                     break;

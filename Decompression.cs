@@ -100,6 +100,7 @@ namespace Gzip_Application
             {
                 for (int i = 0; i <= _iterations; i++)
                 {
+                    Helper.semaf.WaitOne();
                     int j = i;
                     Thread decompress = new Thread(() => Block_Decompress_ToArray(j));
                     { }
@@ -138,6 +139,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i <= _iterations; i++)
                     {
+                        Helper.semaf.WaitOne();
                         int j = i;
                         Thread write = new Thread(() => Block_Write_ToStream(toStream, _offsets_calc.Offsets[j], j));
                         { }

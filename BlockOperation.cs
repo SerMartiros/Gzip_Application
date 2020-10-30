@@ -31,6 +31,7 @@ namespace Gzip_Application
                     breader.BaseStream.Seek(offset, SeekOrigin.Begin);
                     int readcount = breader.Read(buffer, 0, buffer.Length);
                     ms.Write(buffer, 0, readcount);
+                    Helper.semaf.Release();
                     return ms.ToArray();
                 }
             }
@@ -46,6 +47,7 @@ namespace Gzip_Application
                     {
                         gzs.Write(_block, 0, _block.Length);
                     }
+                    Helper.semaf.Release();
                     return ms.ToArray();
                 }
             }
@@ -63,6 +65,7 @@ namespace Gzip_Application
                         {
                             decompressStream.Copy(output);
                         }
+                        Helper.semaf.Release();
                         return output.ToArray();
                     }
                 }
@@ -75,6 +78,7 @@ namespace Gzip_Application
             {
                 toStream.Seek(offset, SeekOrigin.Begin);
                 toStream.Write(_block, 0, _block.Length);
+                Helper.semaf.Release();
             }
         }
     }
