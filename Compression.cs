@@ -115,6 +115,7 @@ namespace Gzip_Application
             byte[] byte_arr = bo.CompressBlock();
             _blocksCompressed_array[index] = byte_arr;
             Helper.compressCount++;
+            Helper.semaf.Release();
             Helper.compressEvent.WaitOne();
         }
         private void Block_Write_ToStream(FileStream toStream, long off, int index)
@@ -127,6 +128,7 @@ namespace Gzip_Application
             {
                 Helper.writeEvent.Set();
             }
+            Helper.semaf.Release();
             Helper.rw_lock_slim.ExitWriteLock();
         }
     }

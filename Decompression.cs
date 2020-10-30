@@ -127,6 +127,7 @@ namespace Gzip_Application
             byte[] byte_arr = bo.DecompressBlock();
             _blocksDecompressed_array[index] = byte_arr;
             Helper.decompressCount++;
+            Helper.semaf.Release();
             Helper.decompressEvent.WaitOne();
         }
 
@@ -165,6 +166,7 @@ namespace Gzip_Application
             
                 Helper.writeEvent.Set();
             }
+            Helper.semaf.Release();
             Helper.rw_lock_slim.ExitWriteLock();
         }
     }
