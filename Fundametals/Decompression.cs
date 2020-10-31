@@ -1,34 +1,28 @@
-﻿using System;
+﻿using Gzip_Application.Interfaces;
+using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
 namespace Gzip_Application
 {
-    class Decompression
+    public class Decompression
     {
         private string _inputFile;
         private string _outputFile;
-        private int _iterations;
         private long _fileLength;
-        private byte[][] _blocksToDecompress_array;
+        private Dictionary<int, byte[]> _blocksToDecompress_array = new Dictionary<int, byte[]>();
         private byte[][] _blocksDecompressed_array;
-
-
         private byte[] gzipHeader = Helper.gzipHeader;
-        private IterationsCalculator _iterations_calc;
-        private OffsetsCalculation _offsets_calc;
+        private OffsetsCalculator _offsets_calc;
 
         public Decompression(string inputFile, string outputFile)
         {
             _inputFile = inputFile;
             _outputFile = outputFile;
             _fileLength = new FileInfo(inputFile).Length;
-            _iterations_calc = new IterationsCalculator(new FileInfo(_inputFile).Length, Helper.blockSize);
-            _iterations = _iterations_calc.IterationCount();
-            _blocksToDecompress_array = new byte[_iterations+1][];
-            _blocksDecompressed_array = new byte[_iterations+1][];
-            _offsets_calc = new OffsetsCalculation(_iterations+1);
+
         }
         public void DecompressFile()
         {
@@ -41,6 +35,7 @@ namespace Gzip_Application
 
         private void SplitTasks()
         {
+
             try
             {
                 long remainingBytes = _fileLength;
@@ -67,7 +62,8 @@ namespace Gzip_Application
                             remainingBytes--;
                             if (remainingBytes <= 0)
                             {
-                                _blocksToDecompress_array[readCycle] = block.ToArray();
+                                _blocksToDecompress_array.Add(readCycle, block.ToArray());
+                                readCycle++;
                                 break;
                             }
                             if (currentByte == gzipHeader[foundCount])
@@ -77,8 +73,7 @@ namespace Gzip_Application
                                     continue;
 
                                 block.RemoveRange(block.Count - gzipHeader.Length, gzipHeader.Length);
-
-                                _blocksToDecompress_array[readCycle] = block.ToArray();
+                                _blocksToDecompress_array.Add(readCycle, block.ToArray());
                                 readCycle++;
                                 break;
                             }
@@ -86,11 +81,13 @@ namespace Gzip_Application
                         }
                     }
                 }
+                _blocksDecompressed_array = new byte[readCycle][];
+                _offsets_calc = new OffsetsCalculator(readCycle);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine("Split file to blocks error");
+                Console.WriteLine("File split into blocks error");
             }
         }
 
@@ -98,37 +95,38 @@ namespace Gzip_Application
         {
             try
             {
-                for (int i = 0; i <= _iterations; i++)
+                for (int i = 0; i < _blocksToDecompress_array.Count; i++)
                 {
                     Helper.semaf.WaitOne();
                     int j = i;
                     Thread decompress = new Thread(() => Block_Decompress_ToArray(j));
                     { }
                     decompress.Start();
+
                 }
-                while (Helper.decompressCount < _iterations + 1)
+                while (Helper.decompressCount < _blocksDecompressed_array.Length)
                 {
-                    if (Helper.decompressCount >= _iterations + 1)
+                    if (Helper.compressCount >= _blocksDecompressed_array.Length)
                     {
-                        Helper.decompressEvent.Set();
+                        Helper.compressEvent.Set();
                     }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine("Deccompress blocks error");
+                Console.WriteLine("Decompression blocks error");
             }
         }
 
         private void Block_Decompress_ToArray(int index)
         {
-            BlockOperation bo = new BlockOperation(_blocksToDecompress_array[index]);
+            IDecompressable bo = new BlockOperation(_blocksToDecompress_array[index]);
             byte[] byte_arr = bo.DecompressBlock();
             _blocksDecompressed_array[index] = byte_arr;
             Helper.decompressCount++;
             Helper.semaf.Release();
-            Helper.decompressEvent.WaitOne();
+            Helper.compressEvent.WaitOne();
         }
 
 
@@ -138,7 +136,7 @@ namespace Gzip_Application
             {
                 using (FileStream toStream = new FileStream(_outputFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
                 {
-                    for (int i = 0; i <= _iterations; i++)
+                    for (int i = 0; i < _blocksToDecompress_array.Count; i++)
                     {
                         Helper.semaf.WaitOne();
                         int j = i;
@@ -159,11 +157,11 @@ namespace Gzip_Application
         private void Block_Write_ToStream(FileStream toStream, long offset, int index)
         {
             Helper.rw_lock_slim.EnterWriteLock();
-            toStream.Seek(offset, SeekOrigin.Begin);
-            toStream.Write(_blocksDecompressed_array[index], 0, _blocksDecompressed_array[index].Length);
+            IWritable bo = new BlockOperation(_blocksDecompressed_array[index]);
+            bo.WriteBlock(toStream, offset);
             Helper.writeCount++;
-            if (Helper.writeCount >= _iterations+1) { 
-            
+            if (Helper.writeCount >= _blocksToDecompress_array.Count)
+            {
                 Helper.writeEvent.Set();
             }
             Helper.semaf.Release();

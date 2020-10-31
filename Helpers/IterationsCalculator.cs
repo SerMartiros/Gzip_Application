@@ -2,7 +2,7 @@
 
 namespace Gzip_Application
 {
-    class IterationsCalculator
+    public class IterationsCalculator
     {
         private long _fileLength;
         private int _blockSize;

@@ -1,9 +1,9 @@
 ﻿namespace Gzip_Application
 {
-    class OffsetsCalculation
+    public class OffsetsCalculator
     {
         private long[] _offsets;
-        public OffsetsCalculation(int iterations)
+        public OffsetsCalculator(int iterations)
         {
             _offsets = new long[iterations];
         }

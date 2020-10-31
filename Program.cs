@@ -24,7 +24,6 @@ namespace Gzip_Application
                     if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
-                        Environment.Exit(0);
                         break;
                     }
                     else
@@ -35,10 +34,9 @@ namespace Gzip_Application
                     break;
                 case "Decompress":
                     Decompression decompressionTask = new Decompression(inputFile, outputFile);
-                    if (File.Exists(outputFile) || !File.Exists(outputFile))
+                    if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
-                        Environment.Exit(0);
                         break;
                     }
                     else
@@ -51,6 +49,8 @@ namespace Gzip_Application
                     Console.WriteLine("Wrong Method Name");
                     break;
             }
+
+            Console.ReadLine();
         }
     }
 }

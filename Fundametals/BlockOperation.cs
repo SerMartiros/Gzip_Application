@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Gzip_Application.Interfaces;
+using System;
 using System.IO;
 using System.IO.Compression;
+using System.Web;
 
 namespace Gzip_Application
 {
-    class BlockOperation
+    class BlockOperation: ICompressable, IDecompressable, IWritable, IFetchable
     {
         private byte[] _block;
         private Object _locker = new Object();
@@ -14,25 +16,38 @@ namespace Gzip_Application
         }
         public byte[] FetchBlock(int index, BinaryReader breader)
         {
+            
             lock (_locker)
             {
-                byte[] buffer = new byte[1024 * 1024];
-                long offset = 0;
-                if (index == 0)
+                byte[] holder = new byte[Helper.blockSize];
+                try
                 {
-                    offset = 0;
+                    byte[] buffer = new byte[Helper.blockSize];
+                    long offset = 0;
+                    
+                    if (index == 0)
+                    {
+                        offset = 0;
+                    }
+                    else
+                    {
+                        offset = buffer.Length * index;
+                    }
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        breader.BaseStream.Seek(offset, SeekOrigin.Begin);
+                        int readcount = breader.Read(buffer, 0, buffer.Length);
+                        ms.Write(buffer, 0, readcount);
+                        holder = ms.ToArray();
+                        
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    offset = buffer.Length * index;
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Fetch block operation error");
                 }
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    breader.BaseStream.Seek(offset, SeekOrigin.Begin);
-                    int readcount = breader.Read(buffer, 0, buffer.Length);
-                    ms.Write(buffer, 0, readcount);
-                    return ms.ToArray();
-                }
+                return holder;
             }
         }
 
@@ -40,14 +55,24 @@ namespace Gzip_Application
         {
             lock (_locker)
             {
-                using (MemoryStream ms = new MemoryStream())
+                byte[] holder = new byte[Helper.blockSize];
+                try
                 {
-                    using (GZipStream gzs = new GZipStream(ms, CompressionMode.Compress))
+                    using (MemoryStream ms = new MemoryStream())
                     {
-                        gzs.Write(_block, 0, _block.Length);
+                        using (GZipStream gzs = new GZipStream(ms, CompressionMode.Compress))
+                        {
+                            gzs.Write(_block, 0, _block.Length);
+                        }
+                        holder = ms.ToArray();
                     }
-                    return ms.ToArray();
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Compress block operation error");
+                }
+                return holder;
             }
         }
 
@@ -55,17 +80,27 @@ namespace Gzip_Application
         {
             lock (_locker)
             {
-                using (var output = new MemoryStream())
+                byte[] holder = new byte[Helper.blockSize];
+                try
                 {
-                    using (var input = new MemoryStream(_block))
+                    using (var output = new MemoryStream())
                     {
-                        using (var decompressStream = new GZipStream(input, CompressionMode.Decompress))
+                        using (var input = new MemoryStream(_block))
                         {
-                            decompressStream.Copy(output);
+                            using (var decompressStream = new GZipStream(input, CompressionMode.Decompress))
+                            {
+                                decompressStream.Copy(output);
+                            }
+                            holder = output.ToArray();
                         }
-                        return output.ToArray();
                     }
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Decompress block operation error");
+                }
+                return holder;
             }
         }
 
@@ -73,8 +108,16 @@ namespace Gzip_Application
         {
             lock (_locker)
             {
-                toStream.Seek(offset, SeekOrigin.Begin);
-                toStream.Write(_block, 0, _block.Length);
+                try
+                {
+                    toStream.Seek(offset, SeekOrigin.Begin);
+                    toStream.Write(_block, 0, _block.Length);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Write block operation error");
+                }
             }
         }
     }

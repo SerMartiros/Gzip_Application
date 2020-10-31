@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Gzip_Application.Interfaces;
+using System;
 using System.IO;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Gzip_Application
@@ -14,7 +17,7 @@ namespace Gzip_Application
         private byte[][] _blocksToCompress_array;
         private byte[][] _blocksCompressed_array;
 
-        private OffsetsCalculation _offsets_calc;
+        private OffsetsCalculator _offsets_calc;
         private IterationsCalculator _iterations_calc;
 
         public Compression(string inputFile, string outputFile)
@@ -25,7 +28,7 @@ namespace Gzip_Application
             _iterations = _iterations_calc.IterationCount();
             _blocksToCompress_array = new byte[_iterations][];
             _blocksCompressed_array = new byte[_iterations][];
-            _offsets_calc = new OffsetsCalculation(_iterations);
+            _offsets_calc = new OffsetsCalculator(_iterations);
             _fileLength = new FileInfo(inputFile).Length;
         }
 
@@ -45,8 +48,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i < _iterations; i++)
                     {
-                        Helper.semaf.WaitOne();
-                        BlockOperation bo = new BlockOperation();
+                        IFetchable bo = new BlockOperation();
                         byte[] bt = bo.FetchBlock(i, breader);
                         _blocksToCompress_array[i] = bt;
                     }
@@ -111,7 +113,7 @@ namespace Gzip_Application
 
         private void Block_Compress_ToArray(int index)
         {
-            BlockOperation bo = new BlockOperation(_blocksToCompress_array[index]);
+            ICompressable bo = new BlockOperation(_blocksToCompress_array[index]);
             byte[] byte_arr = bo.CompressBlock();
             _blocksCompressed_array[index] = byte_arr;
             Helper.compressCount++;
@@ -121,7 +123,7 @@ namespace Gzip_Application
         private void Block_Write_ToStream(FileStream toStream, long off, int index)
         {
             Helper.rw_lock_slim.EnterWriteLock();
-            BlockOperation bo = new BlockOperation(_blocksCompressed_array[index]);
+            IWritable bo = new BlockOperation(_blocksCompressed_array[index]);
             bo.WriteBlock(toStream, off);
             Helper.writeCount++;
             if (Helper.writeCount >= _iterations)
