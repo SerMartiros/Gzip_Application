@@ -51,13 +51,14 @@
     <Compile Include="Fundametals\BlockOperation.cs" />
     <Compile Include="Fundametals\Compression.cs" />
     <Compile Include="Fundametals\Decompression.cs" />
+    <Compile Include="Interfaces\IArchivable.cs" />
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\IterationsCalculator.cs" />
     <Compile Include="Helpers\OffsetsCalculator.cs" />
     <Compile Include="Interfaces\ICompressable.cs" />
     <Compile Include="Interfaces\IDecompressable.cs" />
-    <Compile Include="Interfaces\IFetchable.cs" />
+    <Compile Include="Interfaces\IReadable.cs" />
     <Compile Include="Interfaces\IWritable.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

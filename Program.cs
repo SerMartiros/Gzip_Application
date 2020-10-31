@@ -20,7 +20,7 @@ namespace Gzip_Application
             switch (executableAction)
             {
                 case "Compress":
-                    Archivation compressionTask = new Compression(inputFile, outputFile);
+                    IArchivable compressionTask = new Compression(inputFile, outputFile);
                     if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
@@ -33,7 +33,7 @@ namespace Gzip_Application
                     }
                     break;
                 case "Decompress":
-                    Archivation decompressionTask = new Decompression(inputFile, outputFile);
+                    IArchivable decompressionTask = new Decompression(inputFile, outputFile);
                     if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");

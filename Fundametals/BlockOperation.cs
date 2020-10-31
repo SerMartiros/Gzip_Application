@@ -5,7 +5,7 @@ using System.IO.Compression;
 
 namespace Gzip_Application
 {
-    class BlockOperation: ICompressable, IDecompressable, IWritable, IFetchable
+    class BlockOperation: ICompressable, IDecompressable, IWritable, IReadable
     {
         private byte[] _block;
         private Object _locker = new Object();
@@ -13,7 +13,7 @@ namespace Gzip_Application
         {
             _block = block;
         }
-        public byte[] FetchBlock(int index, BinaryReader breader)
+        public byte[] ReadBlock(int index, BinaryReader breader)
         {
             
             lock (_locker)

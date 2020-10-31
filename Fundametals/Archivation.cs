@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Gzip_Application.Fundametals
 {
-    public abstract class Archivation
+    public abstract class Archivation : IArchivable
     {
         protected string _inputFile;
         protected string _outputFile;
@@ -88,7 +88,36 @@ namespace Gzip_Application.Fundametals
                 Console.WriteLine("Decompression blocks error");
             }
         }
-        public abstract void WriteTasks();
+        public virtual void WriteTasks(byte[][] byteArr)
+        {
+            try
+            {
+                using (FileStream toStream = new FileStream(_outputFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    for (int i = 0; i < byteArr.Length; i++)
+                    {
+                        Helper.semaf.WaitOne();
+                        int j = i;
+                        Thread write = new Thread(() => Block_Write_ToStream(toStream, _offsets_calc.Offsets[j], byteArr[j], byteArr.Length));
+                        { }
+                        write.Start();
+                    }
+                    Helper.writeEvent.WaitOne();
+                    Console.WriteLine("Operation Finished Successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Write blocks error");
+            }
+        }
+        public virtual void Read_Block_ToArray(BinaryReader breader, int index)
+        {
+            IReadable bo = new BlockOperation();
+            byte[] bt = bo.ReadBlock(index, breader);
+            _blocksToCompress_array[index] = bt;
+        }
         public virtual void Block_Compress_ToArray(int index)
         {
             ICompressable bo = new BlockOperation(_blocksToCompress_array[index]);
@@ -107,7 +136,18 @@ namespace Gzip_Application.Fundametals
             Helper.semaf.Release();
             Helper.compressEvent.WaitOne();
         }
-        public abstract void Block_Write_ToStream(FileStream toStream, long off, int index);
-
+        public virtual void Block_Write_ToStream(FileStream toStream, long offset, byte[] block, int count)
+        {
+            Helper.rw_lock_slim.EnterWriteLock();
+            IWritable bo = new BlockOperation(block);
+            bo.WriteBlock(toStream, offset);
+            Helper.writeCount++;
+            if (Helper.writeCount >= count)
+            {
+                Helper.writeEvent.Set();
+            }
+            Helper.semaf.Release();
+            Helper.rw_lock_slim.ExitWriteLock();
+        }
     }
 }

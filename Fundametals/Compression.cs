@@ -1,8 +1,6 @@
 ﻿using Gzip_Application.Fundametals;
-using Gzip_Application.Interfaces;
 using System;
 using System.IO;
-using System.Threading;
 
 namespace Gzip_Application
 {
@@ -25,7 +23,7 @@ namespace Gzip_Application
             SplitTasks();
             base.CompressionTasks();
             _offsets_calc.CalculateOffsets(_blocksCompressed_array);
-            WriteTasks();
+            base.WriteTasks(_blocksCompressed_array);
         }
 
         public override void SplitTasks()
@@ -36,9 +34,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i < _iterations; i++)
                     {
-                        IFetchable bo = new BlockOperation();
-                        byte[] bt = bo.FetchBlock(i, breader);
-                        _blocksToCompress_array[i] = bt;
+                        Read_Block_ToArray(breader, i);
                     }
                 }
             }
@@ -47,44 +43,6 @@ namespace Gzip_Application
                 Console.WriteLine(ex.Message);
                 Console.WriteLine("File split into blocks error");
             }
-        }
-        public override void WriteTasks()
-        {
-            try
-            {
-                using (FileStream toStream = new FileStream(_outputFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-                {
-                    for (int i = 0; i < _iterations; i++)
-                    {
-                        Helper.semaf.WaitOne();
-                        int j = i;
-                        Thread write = new Thread(() => Block_Write_ToStream(toStream, _offsets_calc.Offsets[j], j));
-                        { }
-                        write.Start();
-                    }
-                    Helper.writeEvent.WaitOne();
-                    Console.WriteLine("Compression Finished Successfully");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("Write blocks error");
-            }
-        }
-
-        public override void Block_Write_ToStream(FileStream toStream, long off, int index)
-        {
-            Helper.rw_lock_slim.EnterWriteLock();
-            IWritable bo = new BlockOperation(_blocksCompressed_array[index]);
-            bo.WriteBlock(toStream, off);
-            Helper.writeCount++;
-            if (Helper.writeCount >= _iterations)
-            {
-                Helper.writeEvent.Set();
-            }
-            Helper.semaf.Release();
-            Helper.rw_lock_slim.ExitWriteLock();
         }
     }
 }
