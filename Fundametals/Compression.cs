@@ -1,25 +1,13 @@
-﻿using Gzip_Application.Interfaces;
+﻿using Gzip_Application.Fundametals;
+using Gzip_Application.Interfaces;
 using System;
 using System.IO;
-using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Gzip_Application
 {
-    class Compression
+    public class Compression:Archivation
     {
-        private string _inputFile;
-        private string _outputFile;
-        private int _iterations;
-        private long _fileLength;
-
-        private byte[][] _blocksToCompress_array;
-        private byte[][] _blocksCompressed_array;
-
-        private OffsetsCalculator _offsets_calc;
-        private IterationsCalculator _iterations_calc;
-
         public Compression(string inputFile, string outputFile)
         {
             _inputFile = inputFile;
@@ -32,15 +20,15 @@ namespace Gzip_Application
             _fileLength = new FileInfo(inputFile).Length;
         }
 
-        public void CompressFile()
+        public override void CompressFile()
         {
             SplitTasks();
-            CompressionTasks();
+            base.CompressionTasks();
             _offsets_calc.CalculateOffsets(_blocksCompressed_array);
             WriteTasks();
         }
 
-        private void SplitTasks()
+        public override void SplitTasks()
         {
             try
             {
@@ -60,34 +48,7 @@ namespace Gzip_Application
                 Console.WriteLine("File split into blocks error");
             }
         }
-
-        private void CompressionTasks()
-        {
-            try
-            {
-                for (int i = 0; i < _blocksToCompress_array.Length; i++)
-                {
-                    Helper.semaf.WaitOne();
-                    int j = i;
-                    Thread compress = new Thread(() => Block_Compress_ToArray(j));
-                    { }
-                    compress.Start();
-                }
-                while (Helper.compressCount < _iterations)
-                {
-                    if (Helper.compressCount >= _iterations)
-                    {
-                        Helper.compressEvent.Set();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("Compression blocks error");
-            }
-        }
-        private void WriteTasks()
+        public override void WriteTasks()
         {
             try
             {
@@ -112,16 +73,7 @@ namespace Gzip_Application
             }
         }
 
-        private void Block_Compress_ToArray(int index)
-        {
-            ICompressable bo = new BlockOperation(_blocksToCompress_array[index]);
-            byte[] byte_arr = bo.CompressBlock();
-            _blocksCompressed_array[index] = byte_arr;
-            Helper.compressCount++;
-            Helper.semaf.Release();
-            Helper.compressEvent.WaitOne();
-        }
-        private void Block_Write_ToStream(FileStream toStream, long off, int index)
+        public override void Block_Write_ToStream(FileStream toStream, long off, int index)
         {
             Helper.rw_lock_slim.EnterWriteLock();
             IWritable bo = new BlockOperation(_blocksCompressed_array[index]);

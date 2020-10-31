@@ -1,22 +1,14 @@
-﻿using Gzip_Application.Interfaces;
+﻿using Gzip_Application.Fundametals;
+using Gzip_Application.Interfaces;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
 namespace Gzip_Application
 {
-    public class Decompression
+    public class Decompression:Archivation
     {
-        private string _inputFile;
-        private string _outputFile;
-        private long _fileLength;
-        private Dictionary<int, byte[]> _blocksToDecompress_array = new Dictionary<int, byte[]>();
-        private byte[][] _blocksDecompressed_array;
-        private byte[] gzipHeader = Helper.gzipHeader;
-        private OffsetsCalculator _offsets_calc;
-
         public Decompression(string inputFile, string outputFile)
         {
             _inputFile = inputFile;
@@ -24,18 +16,17 @@ namespace Gzip_Application
             _fileLength = new FileInfo(inputFile).Length;
 
         }
-        public void DecompressFile()
+        public override void DecompressFile()
         {
             SplitTasks();
-            DecompressionTasks();
+            base.DecompressionTasks();
             _offsets_calc.CalculateOffsets(_blocksDecompressed_array);
             WriteTasks();
         }
 
 
-        private void SplitTasks()
+        public override void SplitTasks()
         {
-
             try
             {
                 long remainingBytes = _fileLength;
@@ -90,47 +81,7 @@ namespace Gzip_Application
                 Console.WriteLine("File split into blocks error");
             }
         }
-
-        private void DecompressionTasks()
-        {
-            try
-            {
-                for (int i = 0; i < _blocksToDecompress_array.Count; i++)
-                {
-                    Helper.semaf.WaitOne();
-                    int j = i;
-                    Thread decompress = new Thread(() => Block_Decompress_ToArray(j));
-                    { }
-                    decompress.Start();
-
-                }
-                while (Helper.decompressCount < _blocksDecompressed_array.Length)
-                {
-                    if (Helper.compressCount >= _blocksDecompressed_array.Length)
-                    {
-                        Helper.compressEvent.Set();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("Decompression blocks error");
-            }
-        }
-
-        private void Block_Decompress_ToArray(int index)
-        {
-            IDecompressable bo = new BlockOperation(_blocksToDecompress_array[index]);
-            byte[] byte_arr = bo.DecompressBlock();
-            _blocksDecompressed_array[index] = byte_arr;
-            Helper.decompressCount++;
-            Helper.semaf.Release();
-            Helper.compressEvent.WaitOne();
-        }
-
-
-        private void WriteTasks()
+        public override void WriteTasks()
         {
             try
             {
@@ -154,8 +105,7 @@ namespace Gzip_Application
                 Console.WriteLine("Write blocks error");
             }
         }
-
-        private void Block_Write_ToStream(FileStream toStream, long offset, int index)
+        public override void Block_Write_ToStream(FileStream toStream, long offset, int index)
         {
             Helper.rw_lock_slim.EnterWriteLock();
             IWritable bo = new BlockOperation(_blocksDecompressed_array[index]);

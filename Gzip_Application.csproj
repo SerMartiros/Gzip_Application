@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fundametals\Archivation.cs" />
     <Compile Include="Fundametals\BlockOperation.cs" />
     <Compile Include="Fundametals\Compression.cs" />
     <Compile Include="Fundametals\Decompression.cs" />

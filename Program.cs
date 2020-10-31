@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gzip_Application.Fundametals;
+using System;
 using System.IO;
 
 namespace Gzip_Application
@@ -19,8 +20,7 @@ namespace Gzip_Application
             switch (executableAction)
             {
                 case "Compress":
-                    Compression compressionTask = new Compression(inputFile, outputFile);
-
+                    Archivation compressionTask = new Compression(inputFile, outputFile);
                     if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
@@ -33,7 +33,7 @@ namespace Gzip_Application
                     }
                     break;
                 case "Decompress":
-                    Decompression decompressionTask = new Decompression(inputFile, outputFile);
+                    Archivation decompressionTask = new Decompression(inputFile, outputFile);
                     if (File.Exists(outputFile) || !File.Exists(inputFile))
                     {
                         Console.WriteLine($"File {outputFile} already exists or File {inputFile} doesn't exist ");
