@@ -142,12 +142,12 @@ namespace Gzip_Application.Fundametals
             IWritable bo = new BlockOperation(block);
             bo.WriteBlock(toStream, offset);
             Helper.writeCount++;
+            Helper.semaf.Release();
+            Helper.rw_lock_slim.ExitWriteLock();
             if (Helper.writeCount >= count)
             {
                 Helper.writeEvent.Set();
             }
-            Helper.semaf.Release();
-            Helper.rw_lock_slim.ExitWriteLock();
         }
     }
 }
