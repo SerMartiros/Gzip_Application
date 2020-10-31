@@ -102,6 +102,7 @@ namespace Gzip_Application
                         write.Start();
                     }
                     Helper.writeEvent.WaitOne();
+                    Console.WriteLine("Compression Finished Successfully");
                 }
             }
             catch (Exception ex)

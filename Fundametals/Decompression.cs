@@ -145,6 +145,7 @@ namespace Gzip_Application
                         write.Start();
                     }
                     Helper.writeEvent.WaitOne();
+                    Console.WriteLine("Decompression Finished Successfully");
                 }
             }
             catch (Exception ex)
