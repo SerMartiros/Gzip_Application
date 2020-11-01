@@ -1,18 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Gzip_Application.Fundametals
+namespace Gzip_Application.Interfaces
 {
     public interface IArchivable
     {
-        void Block_Compress_ToArray(int index);
-        void Block_Decompress_ToArray(int index);
-        void Block_Write_ToStream(FileStream toStream, long offset, byte[] block, int count);
         void CompressFile();
-        void CompressionTasks();
         void DecompressFile();
-        void DecompressionTasks();
-        void SplitTasks();
-        void WriteTasks(byte[][] byteArr);
-        void Read_Block_ToArray(BinaryReader breader, int index);
     }
 }

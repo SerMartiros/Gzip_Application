@@ -2,8 +2,8 @@
 
 namespace Gzip_Application.Interfaces
 {
-    interface IWritable
+    public interface IWritable
     {
-        void WriteBlock(FileStream toStream, long offset);
+        void Execute(FileStream toStream, long offset);
     }
 }

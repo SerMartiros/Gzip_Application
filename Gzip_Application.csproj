@@ -47,17 +47,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fundametals\Archivation.cs" />
-    <Compile Include="Fundametals\BlockOperation.cs" />
-    <Compile Include="Fundametals\Compression.cs" />
-    <Compile Include="Fundametals\Decompression.cs" />
-    <Compile Include="Interfaces\IArchivable.cs" />
+    <Compile Include="ArchivationOperations\Archivation.cs" />
+    <Compile Include="BlockOperations\BlockCompressor.cs" />
+    <Compile Include="BlockOperations\BlockDecompressor.cs" />
+    <Compile Include="BlockOperations\BlockReader.cs" />
+    <Compile Include="BlockOperations\BlockWriter.cs" />
+    <Compile Include="ArchivationOperations\Compression.cs" />
+    <Compile Include="ArchivationOperations\Decompression.cs" />
+    <Compile Include="Helpers\OperationType.cs" />
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\Helper.cs" />
     <Compile Include="Helpers\IterationsCalculator.cs" />
     <Compile Include="Helpers\OffsetsCalculator.cs" />
-    <Compile Include="Interfaces\ICompressable.cs" />
-    <Compile Include="Interfaces\IDecompressable.cs" />
+    <Compile Include="Interfaces\IArchivable.cs" />
+    <Compile Include="Interfaces\IDe_Compressible.cs" />
     <Compile Include="Interfaces\IReadable.cs" />
     <Compile Include="Interfaces\IWritable.cs" />
     <Compile Include="Program.cs" />

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Gzip_Application.Helpers;
 
 namespace Gzip_Application
 {
@@ -17,12 +18,10 @@ namespace Gzip_Application
         public override void DecompressFile()
         {
             SplitTasks();
-            base.DecompressionTasks();
-            _offsets_calc.CalculateOffsets(_blocksDecompressed_array);
-            base.WriteTasks(_blocksDecompressed_array);
+            base.ArchivationTasks(_blocks_toDecompress_array.ToArray(), OperationType.Decompress);
+            _offsets_calc.CalculateOffsets(_blocks_processed_array);
+            base.WriteTasks(_blocks_processed_array);
         }
-
-
         public override void SplitTasks()
         {
             try
@@ -51,7 +50,7 @@ namespace Gzip_Application
                             remainingBytes--;
                             if (remainingBytes <= 0)
                             {
-                                _blocksToDecompress_array.Add(readCycle, block.ToArray());
+                                _blocks_toDecompress_array.Add(block.ToArray());
                                 readCycle++;
                                 break;
                             }
@@ -62,7 +61,7 @@ namespace Gzip_Application
                                     continue;
 
                                 block.RemoveRange(block.Count - gzipHeader.Length, gzipHeader.Length);
-                                _blocksToDecompress_array.Add(readCycle, block.ToArray());
+                                _blocks_toDecompress_array.Add(block.ToArray());
                                 readCycle++;
                                 break;
                             }
@@ -70,7 +69,7 @@ namespace Gzip_Application
                         }
                     }
                 }
-                _blocksDecompressed_array = new byte[readCycle][];
+                _blocks_processed_array = new byte[readCycle][];
                 _offsets_calc = new OffsetsCalculator(readCycle);
             }
             catch (Exception ex)

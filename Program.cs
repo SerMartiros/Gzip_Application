@@ -1,4 +1,5 @@
 ﻿using Gzip_Application.Fundametals;
+using Gzip_Application.Interfaces;
 using System;
 using System.IO;
 
@@ -49,7 +50,6 @@ namespace Gzip_Application
                     Console.WriteLine("Wrong Method Name");
                     break;
             }
-
             Console.ReadLine();
         }
     }

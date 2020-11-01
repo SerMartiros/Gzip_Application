@@ -2,8 +2,8 @@
 
 namespace Gzip_Application.Interfaces
 {
-    interface IReadable
+    public interface IReadable
     {
-        byte[] ReadBlock(int index, BinaryReader breader);
+        byte[] Execute(int index, BinaryReader breader);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Gzip_Application.Fundametals;
 using System;
 using System.IO;
+using Gzip_Application.Helpers;
 
 namespace Gzip_Application
 {
@@ -12,8 +13,8 @@ namespace Gzip_Application
             _outputFile = outputFile;
             _iterations_calc = new IterationsCalculator(new FileInfo(_inputFile).Length, Helper.blockSize);
             _iterations = _iterations_calc.IterationCount();
-            _blocksToCompress_array = new byte[_iterations][];
-            _blocksCompressed_array = new byte[_iterations][];
+            _blocks_toCompress_array = new byte[_iterations][];
+            _blocks_processed_array = new byte[_iterations][];
             _offsets_calc = new OffsetsCalculator(_iterations);
             _fileLength = new FileInfo(inputFile).Length;
         }
@@ -21,9 +22,9 @@ namespace Gzip_Application
         public override void CompressFile()
         {
             SplitTasks();
-            base.CompressionTasks();
-            _offsets_calc.CalculateOffsets(_blocksCompressed_array);
-            base.WriteTasks(_blocksCompressed_array);
+            base.ArchivationTasks(_blocks_toCompress_array, OperationType.Compress);
+            _offsets_calc.CalculateOffsets(_blocks_processed_array);
+            base.WriteTasks(_blocks_processed_array);
         }
 
         public override void SplitTasks()
