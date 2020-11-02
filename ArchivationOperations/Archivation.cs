@@ -28,7 +28,7 @@ namespace Gzip_Application.Fundametals
         {
             Console.WriteLine("Base DecompressFile");
         }
-        public abstract void SplitTasks();
+        public abstract void ReadTasks();
 
         public virtual void WriteTasks(byte[][] byteArr)
         {
@@ -54,7 +54,7 @@ namespace Gzip_Application.Fundametals
                 Console.WriteLine("Write blocks error");
             }
         }
-        public virtual void Read_Block_ToArray(BinaryReader breader, int index)
+        public virtual void Block_Read_ToArray(BinaryReader breader, int index)
         {
             try
             {

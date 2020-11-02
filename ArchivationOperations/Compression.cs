@@ -21,13 +21,13 @@ namespace Gzip_Application
 
         public override void CompressFile()
         {
-            SplitTasks();
+            ReadTasks();
             base.ArchivationTasks(_blocks_toCompress_array, OperationType.Compress);
             _offsets_calc.CalculateOffsets(_blocks_processed_array);
             base.WriteTasks(_blocks_processed_array);
         }
 
-        public override void SplitTasks()
+        public override void ReadTasks()
         {
             try
             {
@@ -35,7 +35,7 @@ namespace Gzip_Application
                 {
                     for (int i = 0; i < _iterations; i++)
                     {
-                        Read_Block_ToArray(breader, i);
+                        Block_Read_ToArray(breader, i);
                     }
                 }
             }

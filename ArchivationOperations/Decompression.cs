@@ -17,12 +17,12 @@ namespace Gzip_Application
         }
         public override void DecompressFile()
         {
-            SplitTasks();
+            ReadTasks();
             base.ArchivationTasks(_blocks_toDecompress_array.ToArray(), OperationType.Decompress);
             _offsets_calc.CalculateOffsets(_blocks_processed_array);
             base.WriteTasks(_blocks_processed_array);
         }
-        public override void SplitTasks()
+        public override void ReadTasks()
         {
             try
             {
